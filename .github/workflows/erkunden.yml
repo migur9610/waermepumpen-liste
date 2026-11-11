@@ -6,36 +6,18 @@ on:
 permissions:
   contents: write
 jobs:
-  erkunden:
+  probe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Seite und Skripte holen
-        run: |
-          mkdir -p erkundung/js; cd erkundung
-          B=https://elan1.bafa.bund.de; S=$B/zvi-ui/wep/waermepumpen
-          curl -4 -sS --max-time 30 "$S" -o seite.html
-          grep -oE '(src|href)="[^"]+"' seite.html | sed -E 's/^(src|href)="//;s/"$//' | sort -u > links.txt
-          cat links.txt
-          for l in $(grep -E '\.js' links.txt); do
-            case "$l" in http*) u="$l";; /*) u="$B$l";; *) u="$B/zvi-ui/$l";; esac
-            f="js/$(basename "${l%%\?*}")"; curl -4 -sS --max-time 30 "$u" -o "$f"; echo "$u $(wc -c <"$f")"
+      - run: |
+          mkdir -p erkundung/probe; cd erkundung/probe
+          B=https://elan1.bafa.bund.de
+          n=0
+          for p in "/zvi-api/wep/waermepumpen?seite=0&anzahl=3" "/zvi-api/wep/waermepumpen?seite=0&anzahl=3&sortierung=markeHersteller,asc" "/zvi-api/wep/waermepumpen/kaeltemittel" "/zvi-api/config/zvi" "/zvi-api/environment-config/zvi" "/zvi-ui/assets/config/zvi" ; do
+            n=$((n+1)); c=$(curl -4 -sS --max-time 30 -H 'Accept: application/json' -o p$n.txt -w '%{http_code} %{content_type}' "$B$p"); echo "$n $c $p" | tee -a uebersicht.txt
           done
-          # zweite Ebene: nachgeladene Chunks
-          for c in $(grep -ohE '"[A-Za-z0-9_./-]*chunk[A-Za-z0-9_.-]*\.js"|"[0-9]+\.[a-f0-9]+\.js"' js/*.js 2>/dev/null | tr -d '"' | sort -u | head -80); do
-            u="$B/zvi-ui/$c"; f="js/$(basename "$c")"; [ -f "$f" ] || curl -4 -sS --max-time 30 "$u" -o "$f"
-          done
-          for f in assets/config.json assets/env.js assets/environment.json config.json env.js; do echo "== $f $(curl -4 -s -o cfg_$(basename $f) -w '%{http_code}' $B/zvi-ui/$f)"; done
-          python3 - <<'P'
-          import re,glob
-          t=''.join(open(f,encoding='utf8',errors='replace').read() for f in glob.glob('js/*.js')+glob.glob('cfg_*'))
-          f=sorted(set(m.group(0) for m in re.finditer(r'.{0,160}(?:zvi-api|/api/|apiUrl|baseUrl|backendUrl|serverUrl).{0,220}',t)))
-          open('funde.txt','w').write('\n'.join(f))
-          p=sorted(set(re.findall(r'["`\'](/?[A-Za-z0-9_/${}.-]*(?:waermepumpe|anlage|wep|liste|export|csv|xlsx|pdf|suche|search)[A-Za-z0-9_/${}.?=&-]*)["`\']',t,re.I)))
-          open('pfade.txt','w').write('\n'.join(p))
-          P
-          ls -la js; wc -l funde.txt pfade.txt
-      - name: Funde sichern
-        run: |
+          grep -oE 'configApiUrl[^,;]{0,120}|applicationClientIdInjectionToken,useValue:[^}]{0,200}' ../js/main*.js | head -5 | tee -a uebersicht.txt || true
+      - run: |
           git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
-          git add erkundung; git commit -qm "Erkundung $(date -u +%F)" || true; git push
+          git add erkundung; git commit -qm "Probe $(date -u +%F)" || true; git push
