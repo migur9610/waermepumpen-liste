@@ -11,22 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p erkundung/probe2; cd erkundung/probe2
+          mkdir -p erkundung/probe3; cd erkundung/probe3
           U=https://elan1.bafa.bund.de/zvi-api/wep/waermepumpen
           n=0
           while IFS= read -r q; do
             n=$((n+1)); c=$(curl -4 -sS -G --max-time 40 -H 'Accept: application/json' -o v$n.txt -w '%{http_code}' "$U" $q); echo "$n $c $q :: $(head -c 160 v$n.txt)" | tee -a uebersicht.txt
           done <<'Q'
-          --data-urlencode seite=0 --data-urlencode anzahl=20
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode sortierung=markeHersteller,asc,ic
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller=="*a*"
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=geraeteBezeichnung=="*"
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller=="Daikin*"
-          --data-urlencode seite=0 --data-urlencode anzahl=1000 --data-urlencode filter=markeHersteller=="*a*"
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode sortierung=anlagenNummer,asc
-          --data-urlencode seite=1 --data-urlencode anzahl=20
-          --data-urlencode anzahl=20
-          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=einzelAbnahme==false
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=pumpentyp==LUFT_WASSER
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=waermequelle==LUFT
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=waermequelle=in=(LUFT,ERDREICH,WASSER)
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=pumpentyp=in=(LUFT_WASSER,LUFT_LUFT)
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=antriebsart==ELEKTRISCH
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller==Daikin
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller=ik=daikin
           Q
       - run: |
           git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
