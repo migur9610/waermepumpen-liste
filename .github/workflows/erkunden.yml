@@ -18,15 +18,22 @@ jobs:
           grep -oE '(src|href)="[^"]+"' seite.html | sed -E 's/^(src|href)="//;s/"$//' | sort -u > links.txt
           cat links.txt
           for l in $(grep -E '\.js' links.txt); do
-            case "$l" in http*) u="$l";; /*) u="$B$l";; *) u="$B/zvi-ui/wep/$l";; esac
+            case "$l" in http*) u="$l";; /*) u="$B$l";; *) u="$B/zvi-ui/$l";; esac
             f="js/$(basename "${l%%\?*}")"; curl -4 -sS --max-time 30 "$u" -o "$f"; echo "$u $(wc -c <"$f")"
           done
           # zweite Ebene: nachgeladene Chunks
           for c in $(grep -ohE '"[A-Za-z0-9_./-]*chunk[A-Za-z0-9_.-]*\.js"|"[0-9]+\.[a-f0-9]+\.js"' js/*.js 2>/dev/null | tr -d '"' | sort -u | head -80); do
             u="$B/zvi-ui/$c"; f="js/$(basename "$c")"; [ -f "$f" ] || curl -4 -sS --max-time 30 "$u" -o "$f"
           done
-          grep -ohE '.{0,150}(zvi-api|/api/|apiUrl|baseUrl|environment).{0,200}' js/*.js | sort -u | head -300 > funde.txt
-          grep -ohE '"/?[a-zA-Z0-9_/-]*(waermepumpe|anlage|wep|liste|export|csv|xlsx|pdf)[a-zA-Z0-9_/{}.?=&-]*"' js/*.js | sort -u > pfade.txt
+          for f in assets/config.json assets/env.js assets/environment.json config.json env.js; do echo "== $f $(curl -4 -s -o cfg_$(basename $f) -w '%{http_code}' $B/zvi-ui/$f)"; done
+          python3 - <<'P'
+          import re,glob
+          t=''.join(open(f,encoding='utf8',errors='replace').read() for f in glob.glob('js/*.js')+glob.glob('cfg_*'))
+          f=sorted(set(m.group(0) for m in re.finditer(r'.{0,160}(?:zvi-api|/api/|apiUrl|baseUrl|backendUrl|serverUrl).{0,220}',t)))
+          open('funde.txt','w').write('\n'.join(f))
+          p=sorted(set(re.findall(r'["`\'](/?[A-Za-z0-9_/${}.-]*(?:waermepumpe|anlage|wep|liste|export|csv|xlsx|pdf|suche|search)[A-Za-z0-9_/${}.?=&-]*)["`\']',t,re.I)))
+          open('pfade.txt','w').write('\n'.join(p))
+          P
           ls -la js; wc -l funde.txt pfade.txt
       - name: Funde sichern
         run: |
