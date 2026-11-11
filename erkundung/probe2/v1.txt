@@ -1,0 +1,1 @@
+{"timestamp":"2026-11-11T09:38:09.858334966","status":400,"error":"Bad Request","code":"E_0005","errorId":917210551,"message":"Eine Suche mit diesen Filterkriterien ist nicht möglich","path":null}
