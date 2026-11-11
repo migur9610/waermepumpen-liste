@@ -1,0 +1,25 @@
+name: BAFA-Liste abholen
+on:
+  schedule:
+    - cron: '17 2 * * *'   # täglich 02:17 UTC (03:17/04:17 deutsche Zeit)
+  workflow_dispatch:
+  push:
+    paths: ['werkzeug/abholen.py', '.github/workflows/abholen.yml']
+permissions:
+  contents: write
+concurrency:
+  group: abholen
+  cancel-in-progress: false
+jobs:
+  abholen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 werkzeug/abholen.py
+      - name: Speichern
+        run: |
+          git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
+          git add daten
+          git commit -qm "BAFA-Liste $(date -u +%F): $(python3 -c "import json;s=json.load(open('daten/stand.json'));print(s['anzahl'],'Einträge')")" || exit 0
+          git push
