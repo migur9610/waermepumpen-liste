@@ -1,0 +1,17 @@
+name: Schnittstelle erkunden
+on:
+  push:
+    paths: ['werkzeug/erkunden.py', '.github/workflows/erkunden.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  erkunden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 werkzeug/erkunden.py
+      - name: Funde sichern
+        run: |
+          git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
+          git add erkundung; git commit -m "Erkundung $(date -u +%F)" || true; git push
