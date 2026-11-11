@@ -1,0 +1,1 @@
+{"timestamp":"2026-11-11T09:43:09.404440372","status":400,"error":"Bad Request","code":"E_0002","errorId":479888481,"message":"getWaermepumpen.anzahl: must be less than or equal to 100","path":null}
