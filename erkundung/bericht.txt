@@ -1,0 +1,13 @@
+SEITE 0  25
+PROBE 0  25 /zvi-api :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/ :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/wep/waermepumpen :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/api/wep/waermepumpen :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/public/wep/waermepumpen :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/wep/waermepumpen?page=0&size=5 :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/v3/api-docs :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/v2/api-docs :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/swagger-ui/index.html :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/actuator :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/wep/anlagen :: b'<urlopen error timed out>'
+PROBE 0  25 /zvi-api/api/waermepumpen :: b'<urlopen error timed out>'
