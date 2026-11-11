@@ -1,0 +1,15 @@
+{
+ "quelle": "BAFA Wärmeerzeuger-Portal (WEP), Liste Wärmepumpen – https://elan1.bafa.bund.de/zvi-ui/wep/waermepumpen",
+ "foerderfaehigAm": "2026-11-11",
+ "abgerufen": "2026-11-11T08:46:40Z",
+ "datenStand": "2026-11-11",
+ "anzahl": 6882,
+ "pruefsumme": "bb35690b2b3f3e56",
+ "unbekannteFelder": [
+  "artEeAnzeige",
+  "kaeltemittel3",
+  "kaeltemittel4",
+  "mengeKaeltemittel3",
+  "mengeKaeltemittel4"
+ ]
+}
