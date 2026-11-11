@@ -11,13 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p erkundung/probe; cd erkundung/probe
-          B=https://elan1.bafa.bund.de
+          mkdir -p erkundung/probe2; cd erkundung/probe2
+          U=https://elan1.bafa.bund.de/zvi-api/wep/waermepumpen
           n=0
-          for p in "/zvi-api/wep/waermepumpen?seite=0&anzahl=3" "/zvi-api/wep/waermepumpen?seite=0&anzahl=3&sortierung=markeHersteller,asc" "/zvi-api/wep/waermepumpen/kaeltemittel" "/zvi-api/config/zvi" "/zvi-api/environment-config/zvi" "/zvi-ui/assets/config/zvi" ; do
-            n=$((n+1)); c=$(curl -4 -sS --max-time 30 -H 'Accept: application/json' -o p$n.txt -w '%{http_code} %{content_type}' "$B$p"); echo "$n $c $p" | tee -a uebersicht.txt
-          done
-          grep -oE 'configApiUrl[^,;]{0,120}|applicationClientIdInjectionToken,useValue:[^}]{0,200}' ../js/main*.js | head -5 | tee -a uebersicht.txt || true
+          while IFS= read -r q; do
+            n=$((n+1)); c=$(curl -4 -sS -G --max-time 40 -H 'Accept: application/json' -o v$n.txt -w '%{http_code}' "$U" $q); echo "$n $c $q :: $(head -c 160 v$n.txt)" | tee -a uebersicht.txt
+          done <<'Q'
+          --data-urlencode seite=0 --data-urlencode anzahl=20
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode sortierung=markeHersteller,asc,ic
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller=="*a*"
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=geraeteBezeichnung=="*"
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=markeHersteller=="Daikin*"
+          --data-urlencode seite=0 --data-urlencode anzahl=1000 --data-urlencode filter=markeHersteller=="*a*"
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode sortierung=anlagenNummer,asc
+          --data-urlencode seite=1 --data-urlencode anzahl=20
+          --data-urlencode anzahl=20
+          --data-urlencode seite=0 --data-urlencode anzahl=20 --data-urlencode filter=einzelAbnahme==false
+          Q
       - run: |
           git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
-          git add erkundung; git commit -qm "Probe $(date -u +%F)" || true; git push
+          git add erkundung; git commit -qm "Probe2 $(date -u +%F)" || true; git push
