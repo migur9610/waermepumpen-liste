@@ -1,0 +1,6 @@
+${baseHref}
+bafa-logo.svg
+main.1c01c7b52f4c8f7f.js
+polyfills.35ca02cd122f69c0.js
+runtime.4bf616363b6bbaea.js
+styles.658ec6e7aa4e01c8.css
