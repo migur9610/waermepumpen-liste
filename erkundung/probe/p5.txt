@@ -1,0 +1,1 @@
+{"timestamp":"2026-11-11T09:36:59.692167148","status":404,"error":"Not Found","code":"E_0002","errorId":962669777,"message":"Es ist ein Client-Request-Fehler aufgetreten","path":null}
