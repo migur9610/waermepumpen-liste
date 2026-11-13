@@ -1,0 +1,12 @@
+name: Keymark erkunden (einmalig)
+on:
+  workflow_dispatch:
+  push:
+    paths: ['werkzeug/keymark_probe.py', '.github/workflows/keymark_probe.yml']
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 werkzeug/keymark_probe.py https://keymark.eu/en/products/heatpumps/certified-products https://www.heatpumpkeymark.com/ https://eprel.ec.europa.eu/api/products/airconditioners?_page=1&_limit=1
