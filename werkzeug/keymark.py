@@ -84,7 +84,7 @@ def untertyp(href, inhaber, serie):
     for z in csv.DictReader(io.StringIO(c)):
         d = mod.setdefault(z['modelID'], {})
         n, w, t, k = z['varName'], z['value'], z['temperature'], z['climate']
-        if n == 'title': d['modell'] = w.strip()
+        if n == 'title': d['modell'] = re.sub(r'\s+', ' ', w).strip()
         elif n.startswith('EN14511_2_') and k == '10' and t in VL:
             if n.endswith('_001'): d['p7_' + VL[t]] = zahl(w)
             elif n.endswith('_003'): d['cop7_' + VL[t]] = zahl(w)
@@ -108,7 +108,8 @@ def main():
     for z in alt.get('zeilen', []): zeilen.setdefault(z[0], []).append(z)
     liste = links(hole('/?type=109126'))
     if len(liste) < 50: raise SystemExit(f'Nur {len(liste)} Zertifikatsinhaber gefunden – Seitenaufbau geändert? Alte Daten bleiben stehen')
-    wahl = [(h, n) for h, n in liste if any(x in n.lower() for x in HERSTELLER)]
+    rang = lambda n: min((i for i, x in enumerate(HERSTELLER) if x in n.lower()), default=len(HERSTELLER))
+    wahl = sorted(((h, n) for h, n in liste if rang(n) < len(HERSTELLER)), key=lambda x: rang(x[1]))  # Reihenfolge wie HERSTELLER (wichtigste zuerst)
     print(f'{len(liste)} Zertifikatsinhaber, davon {len(wahl)} ausgewählt')
     neu = geholt = 0; gesehen = set()
     for h, inh in wahl:
@@ -131,6 +132,8 @@ def main():
     if fertig:  # zurückgezogene Untertypen entfernen (nur nach vollständigem Durchlauf)
         for k in [k for k in ut if k not in gesehen and any(ut[k]['inhaber'] == n for _, n in wahl)]:
             zeilen.pop(ut[k].get('sid'), None); del ut[k]
+    for zz in zeilen.values():
+        for z in zz: z[3] = re.sub(r'\s+', ' ', z[3] or '').strip()   # Zeilenumbrüche aus älteren Abrufen
     alle = sorted((z for zz in zeilen.values() for z in zz), key=lambda z: (z[1], z[2], z[3]))
     inhalt = json.dumps(alle, ensure_ascii=False, separators=(',', ':'))
     pruef = hashlib.sha256(inhalt.encode()).hexdigest()[:16]
