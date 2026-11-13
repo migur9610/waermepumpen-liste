@@ -1,0 +1,27 @@
+name: Keymark-Herstellerdaten abholen
+on:
+  schedule:
+    - cron: '41 3 * * *'   # täglich 03:41 UTC; je Lauf höchstens 40 min, schon geholte Untertypen erst nach 60 Tagen neu
+  workflow_dispatch:
+  push:
+    paths: ['werkzeug/keymark.py', '.github/workflows/keymark.yml']
+permissions:
+  contents: write
+concurrency:
+  group: abholen
+  cancel-in-progress: false
+jobs:
+  keymark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      KM_MAX: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -u werkzeug/keymark.py
+      - name: Speichern
+        run: |
+          git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
+          git add daten
+          git commit -qm "Keymark $(date -u +%F): $(python3 -c "import json;s=json.load(open('daten/keymark_stand.json'));print(s['anzahl'],'Modelle')")" || exit 0
+          git pull -q --rebase && git push
