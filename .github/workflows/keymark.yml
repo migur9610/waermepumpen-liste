@@ -14,9 +14,6 @@ jobs:
   keymark:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    env:
-      KM_MAX: '1'
-      KM_DEBUG: '1'
     steps:
       - uses: actions/checkout@v4
       - run: python3 -u werkzeug/keymark.py

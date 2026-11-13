@@ -7,9 +7,9 @@ Nur Außenluft/Wasser. Schon geholte Untertypen werden erst nach ALTER_TAGE neu 
 
 Werte je Modell (Kurzname → Bedeutung, Codes aus dem Keymark-CSV):
   EN 14511-2, Prüfpunkt A7 (Klima-Code 10), Vorlauf 35 °C (Temperatur-Code 4) bzw. 55 °C (Code 5): Heizleistung _001, COP _003
-  EN 14825, mittleres Klima (Code 2): ηs _001, Prated _002, SCOP _003, Tbiv _004, TOL _005,
+  EN 14825, mittleres Klima (Code 3; 1 = wärmer, 2 = kälter – geprüft an ηs gegen die BAFA-Liste): ηs _001, Prated _002, SCOP _003, Tbiv _004, TOL _005,
      Teillastpunkte A−7/+2/+7/+12: Pdh _008/_010/_012/_014, COPd _009/_011/_013/_015
-  EN 12102-1: Schallleistung außen _002 (mittleres Klima, 35 °C)
+  EN 12102-1: Schallleistung außen _002 (mittleres Klima Code 3, 35 °C)
 Ergebnis: daten/keymark_lw.json (felder + zeilen, wie die BAFA-Liste) und daten/keymark_stand.json (Prüfsumme)."""
 import csv, datetime, hashlib, html, io, json, os, re, subprocess, sys, time
 
@@ -79,8 +79,6 @@ def untertyp(href, inhaber, serie):
     menge = zahl(m.group(1)) if m else None
     zert = '-'.join(reversed(info.get('Certification Date', '').split('.'))) or None
     mod = {}
-    if os.environ.get('KM_DEBUG'):
-        print(sorted({(z['varName'], z['temperature'], z['climate']) for z in csv.DictReader(io.StringIO(c)) if z['varName'].startswith('EN')})[:80])
     for z in csv.DictReader(io.StringIO(c)):
         d = mod.setdefault(z['modelID'], {})
         n, w, t, k = z['varName'], z['value'], z['temperature'], z['climate']
@@ -88,9 +86,9 @@ def untertyp(href, inhaber, serie):
         elif n.startswith('EN14511_2_') and k == '10' and t in VL:
             if n.endswith('_001'): d['p7_' + VL[t]] = zahl(w)
             elif n.endswith('_003'): d['cop7_' + VL[t]] = zahl(w)
-        elif n.startswith('EN14825_') and k == '2' and t in VL and n[-3:] in EN14825:
+        elif n.startswith('EN14825_') and k == '3' and t in VL and n[-3:] in EN14825:
             d[EN14825[n[-3:]] + VL[t]] = zahl(w)
-        elif n == 'EN12102_1_002' and k == '2' and t == '4': d['lwa'] = zahl(w)
+        elif n == 'EN12102_1_002' and k == '3' and t == '4': d['lwa'] = zahl(w)
     sid = re.search(r'subtype%5D=(\d+)', ex[0]).group(1)
     zeilen = []
     for d in mod.values():
