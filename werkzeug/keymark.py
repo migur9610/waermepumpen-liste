@@ -79,6 +79,8 @@ def untertyp(href, inhaber, serie):
     menge = zahl(m.group(1)) if m else None
     zert = '-'.join(reversed(info.get('Certification Date', '').split('.'))) or None
     mod = {}
+    if os.environ.get('KM_DEBUG'):
+        print(sorted({(z['varName'], z['temperature'], z['climate']) for z in csv.DictReader(io.StringIO(c)) if z['varName'].startswith('EN')})[:80])
     for z in csv.DictReader(io.StringIO(c)):
         d = mod.setdefault(z['modelID'], {})
         n, w, t, k = z['varName'], z['value'], z['temperature'], z['climate']
