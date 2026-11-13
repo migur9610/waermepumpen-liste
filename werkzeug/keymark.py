@@ -13,6 +13,8 @@ Werte je Modell (Kurzname → Bedeutung, Codes aus dem Keymark-CSV):
 Ergebnis: daten/keymark_lw.json (felder + zeilen, wie die BAFA-Liste) und daten/keymark_stand.json (Prüfsumme)."""
 import csv, datetime, hashlib, html, io, json, os, re, subprocess, sys, time
 
+csv.field_size_limit(1 << 28)  # einzelne Felder (z. B. lange Modelllisten) sind größer als die Vorgabe 128 kB
+
 B = 'https://www.heatpumpkeymark.com'
 ZIEL = 'daten'
 DATEI = f'{ZIEL}/keymark_lw.json'
@@ -117,7 +119,9 @@ def main():
             e = ut.get(key)
             if e and (datetime.date.fromisoformat(heute) - datetime.date.fromisoformat(e['geholt'])).days < ALTER_TAGE: continue
             if time.time() - t0 > ZEIT_MAX or geholt >= UT_MAX: break
-            time.sleep(0.5); r = untertyp(uh, inh, serie); geholt += 1
+            time.sleep(0.5); geholt += 1
+            try: r = untertyp(uh, inh, serie)
+            except Exception as ex: print('Fehler beim Auswerten:', inh, '|', serie, '–', repr(ex)[:200], file=sys.stderr); r = None
             if r is None: print('nicht abrufbar:', inh, '|', serie, file=sys.stderr); continue
             if e and e.get('sid'): zeilen.pop(e['sid'], None)
             if r.get('sid'): zeilen[r['sid']] = r['zeilen']
