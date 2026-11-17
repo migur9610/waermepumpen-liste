@@ -23,4 +23,4 @@ jobs:
           git config user.name "abholdienst"; git config user.email "abholdienst@users.noreply.github.com"
           git add daten
           git commit -qm "BAFA-Liste $(date -u +%F): $(python3 -c "import json;s=json.load(open('daten/stand.json'));print(s['anzahl'],'Einträge')")" || exit 0
-          git push
+          for v in 1 2 3; do git pull -q --rebase && git push && exit 0; sleep 15; done; exit 1   # Keymark-Lauf kann zeitgleich schreiben
