@@ -2,6 +2,7 @@ name: BAFA-Liste abholen
 on:
   schedule:
     - cron: '17 2 * * *'   # täglich 02:17 UTC (03:17/04:17 deutsche Zeit)
+    - cron: '17 14 * * *'  # zweiter Versuch 14:17 UTC, falls das Portal morgens nicht antwortet
   workflow_dispatch:
   push:
     paths: ['werkzeug/abholen.py', '.github/workflows/abholen.yml']
@@ -12,10 +13,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   abholen:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: python3 werkzeug/abholen.py
       - name: Speichern
         run: |

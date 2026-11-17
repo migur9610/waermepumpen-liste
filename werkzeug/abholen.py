@@ -28,20 +28,36 @@ FELDER = [
     ('gtin', 'gtinEan'), ('artikel', 'artikelnummer'), ('web', 'webseite'),
 ]
 
-def seite(nr, heute, versuche=4):
+class NichtErreichbar(Exception):
+    """Portal antwortet nicht (keine Verbindung oder Serverfehler 5xx) – kein Fehler im Skript."""
+
+WARTEN = (30, 60, 120, 180, 240)  # s zwischen den Versuchen: insgesamt gut 10 min Geduld
+
+def seite(nr, heute):
     filt = f'foerderungAb=le="{heute}";foerderungBis=ge="{heute}"'
     q = urllib.parse.urlencode({'filter': filt, 'sortierung': 'markeHersteller,asc;uuid,asc', 'seite': nr, 'anzahl': PRO_SEITE})
-    for v in range(versuche):
-        r = subprocess.run(['curl', '-4', '-sS', '--max-time', '60', '-H', 'Accept: application/json',
+    code = ''
+    for v in range(len(WARTEN) + 1):
+        r = subprocess.run(['curl', '-4', '-sS', '--connect-timeout', '30', '--max-time', '90', '-H', 'Accept: application/json',
                             '-w', '\n%{http_code}', f'{URL}?{q}'], capture_output=True, text=True)
         rumpf, _, code = r.stdout.rpartition('\n')
         if code == '200':
             return json.loads(rumpf)
         print(f'Seite {nr}: HTTP {code or r.stderr.strip()} – Versuch {v + 1}', file=sys.stderr)
-        time.sleep(10 * (v + 1))
-    raise SystemExit(f'Seite {nr} nicht abrufbar – Abbruch, alte Daten bleiben stehen')
+        if v < len(WARTEN):
+            time.sleep(WARTEN[v])
+    if code in ('', '000') or code.startswith('5'):
+        raise NichtErreichbar(f'Seite {nr}: BAFA-Portal nicht erreichbar (HTTP {code or "000"})')
+    raise SystemExit(f'Seite {nr}: HTTP {code} – Abfrage prüfen (Schnittstelle geändert?), alte Daten bleiben stehen')
 
 def main():
+    try:
+        abholen()
+    except NichtErreichbar as e:
+        # Portal zeitweise weg: Lauf nicht als Fehler werten, alte Daten bleiben, nächster Lauf versucht es erneut
+        print(f'::warning::{e} – alte Daten bleiben stehen, nächster Lauf versucht es erneut')
+
+def abholen():
     heute = datetime.date.today().isoformat()
     erste = seite(0, heute)
     gesamt = erste['total']
