@@ -26,6 +26,8 @@ FELDER = [
     ('netz', 'netzdienlichkeit'), ('netzArt', 'netzdienlichkeitArt'), ('abtauGeprueft', 'abtauungGeprueft'), ('abtauArt', 'abtauungArt'),
     ('einzelabnahme', 'einzelabnahme'), ('eeAnzeige', 'eeAnzeige'), ('wmz', 'waermemengenzaehler'),
     ('gtin', 'gtinEan'), ('artikel', 'artikelnummer'), ('web', 'webseite'),
+    # seit 11/2026 im Portal: 3./4. Kältemittel samt Füllmenge, Art der EE-Anzeige (angehängt, damit bestehende Leser unverändert bleiben)
+    ('km3', 'kaeltemittel3'), ('kmMenge3', 'mengeKaeltemittel3'), ('km4', 'kaeltemittel4'), ('kmMenge4', 'mengeKaeltemittel4'), ('eeAnzeigeArt', 'artEeAnzeige'),
 ]
 
 class NichtErreichbar(Exception):
